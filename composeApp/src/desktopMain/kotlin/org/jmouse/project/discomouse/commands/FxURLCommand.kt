@@ -16,7 +16,6 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.statement.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.jmouse.project.discomouse.network.OdesliResponse
 import org.jmouse.project.util.COMMAND_FXURL
@@ -34,6 +33,15 @@ class FxURLCommand(
 
     private val nameForJohn = COMMAND_FXURL2
     private val descForJohn = bundle.getString("fx_url_johns_description")
+
+    private val client = HttpClient(CIO) {
+        install(ContentNegotiation) {
+            json(Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+            })
+        }
+    }
 
     override suspend fun register() {
         bot.createGlobalChatInputCommand(name, description) {
@@ -62,10 +70,10 @@ class FxURLCommand(
         }
     }
 
-    private fun tryToFix(url: String): String {
+    private suspend fun tryToFix(url: String): String {
         return with(url) {
             when {
-                contains("instagram.com/reel") -> url.replace("instagram", "instagramez")
+                contains("instagram.com") -> url.replace("instagram", "ddinstagram")
                 contains("twitter.com") -> url.replace("twitter", "twittpr")
                 contains("x.com") -> url.replace("x.com", "twittpr.com")
                 contains("tiktok.com") -> url.replace("tiktok", "tnktok")
@@ -138,17 +146,8 @@ class FxURLCommand(
         return ERROR_MSG
     }
 
-    private fun getMusicLinks(url: String): Map<String, String?> = runBlocking {
-        val client = HttpClient(CIO) {
-            install(ContentNegotiation) {
-                json(Json {
-                    ignoreUnknownKeys = true
-                    isLenient = true
-                })
-            }
-        }
-
-        try {
+    private suspend fun getMusicLinks(url: String): Map<String, String?> {
+        return try {
             val response: HttpResponse = client.get("https://api.song.link/v1-alpha.1/links?url=$url")
             val odesliResponse: OdesliResponse = response.body()
             mapOf(
@@ -161,8 +160,6 @@ class FxURLCommand(
         } catch (e: Exception) {
             e.printStackTrace()
             emptyMap()
-        } finally {
-            client.close()
         }
     }
 
@@ -183,5 +180,9 @@ class FxURLCommand(
         youtubeMusicLink?.let {linkFields.add("[.]($it)")}
 
         return "## $title\n> *$artist*\n" + linkFields.joinToString(" ")
+    }
+
+    fun shutdown() {
+        client.close()
     }
 }

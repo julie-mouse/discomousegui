@@ -2,7 +2,6 @@ package org.jmouse.project.discomouse
 
 import org.slf4j.event.Level
 import java.io.OutputStream
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 

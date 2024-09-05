@@ -19,6 +19,7 @@ import java.util.ResourceBundle
 
 class DiscomouseBot {
     private var kord: Kord? = null
+    private lateinit var fxUrlCommand: FxURLCommand
 
     fun start(scope: CoroutineScope) {
         if (kord != null) return
@@ -28,7 +29,7 @@ class DiscomouseBot {
                 val bundle = ResourceBundle.getBundle("Strings")
                 kord = Kord(System.getenv("DISCO_MOUSE_KEY"))
 
-                val fxUrlCommand = FxURLCommand(bundle, kord!!)
+                fxUrlCommand = FxURLCommand(bundle, kord!!)
                 val anonMsgCommand = AnonMsgCommand(bundle, kord!!)
 
                 fxUrlCommand.register()
@@ -76,5 +77,7 @@ class DiscomouseBot {
                 kord = null
             }
         }
+
+        fxUrlCommand.shutdown()
     }
 }

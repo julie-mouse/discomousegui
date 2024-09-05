@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+    kotlin("plugin.serialization") version "1.8.10"
 }
 
 kotlin {
@@ -26,7 +27,7 @@ kotlin {
             implementation("dev.kord:kord-core:0.11.1")
             implementation("ch.qos.logback:logback-classic:1.4.11")
 
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
             implementation("io.ktor:ktor-client-core:2.0.3")
             implementation("io.ktor:ktor-client-content-negotiation:2.0.3")
             implementation("io.ktor:ktor-client-cio:2.0.3")

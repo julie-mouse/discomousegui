@@ -8,7 +8,6 @@ import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.AccountBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +26,6 @@ import org.jmouse.project.discomouse.ConsoleOutputStream
 import org.jmouse.project.discomouse.DiscomouseBot
 import org.jmouse.project.discomouse.ParsedLog
 import org.jmouse.project.discomouse.parseLogMessage
-import org.jmouse.project.gui.composables.CustomButton
 import org.jmouse.project.gui.composables.TerminalComposable
 import org.jmouse.project.gui.theme.pastelBG
 import org.jmouse.project.gui.theme.pastelGreen
