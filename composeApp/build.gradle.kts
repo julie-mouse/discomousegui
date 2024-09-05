@@ -45,16 +45,12 @@ compose.desktop {
     application {
         mainClass = "org.jmouse.project.MainKt"
 
-//        nativeDistributions {
-//            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-//            packageName = "org.jmouse.project"
-//            packageVersion = "1.0.0"
-//        }
-
         nativeDistributions {
-            targetFormats(TargetFormat.Exe) // Specify .exe for Windows
-            packageName = "DiscomouseGUI" // Your application name
-            packageVersion = "1.0.0"
+            targetFormats(TargetFormat.Msi)
+            packageName = "DiscomouseGUI"
+            packageVersion = "1.0.1"
+
+            includeAllModules = true
         }
     }
 }
