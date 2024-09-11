@@ -42,18 +42,18 @@ class DiscomouseBot {
                     }
                 }
 
-                kord!!.on<MessageCreateEvent> {
-                    if (message.author?.isBot != false) return@on
-
-                    with(message.content) {
-                        when {
-                            startsWith("/${COMMAND_FXURL}") || startsWith("/${COMMAND_FXURL2}") ->
-                                fxUrlCommand.fxUrlTextBased(message)
-
-                            else -> return@on
-                        }
-                    }
-                }
+//                kord!!.on<MessageCreateEvent> {
+//                    if (message.author?.isBot != false) return@on
+//
+//                    with(message.content) {
+//                        when {
+//                            startsWith("/${COMMAND_FXURL}") || startsWith("/${COMMAND_FXURL2}") ->
+//                                fxUrlCommand.fxUrlTextBased(message)
+//
+//                            else -> return@on
+//                        }
+//                    }
+//                }
 
                 kord!!.login {
                     @OptIn(PrivilegedIntent::class)

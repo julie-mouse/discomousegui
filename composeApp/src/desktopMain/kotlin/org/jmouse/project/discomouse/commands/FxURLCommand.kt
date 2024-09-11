@@ -1,28 +1,29 @@
 package org.jmouse.project.discomouse.commands
 
 import dev.kord.core.Kord
+import dev.kord.core.behavior.interaction.response.DeferredPublicMessageInteractionResponseBehavior
+import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.interaction.GuildChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
-import java.net.HttpURLConnection
-import java.net.URL
-import java.util.ResourceBundle
-
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.request.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
 import org.jmouse.project.discomouse.network.OdesliResponse
 import org.jmouse.project.util.COMMAND_FXURL
 import org.jmouse.project.util.COMMAND_FXURL2
 import org.jmouse.project.util.ERROR_MSG
 import org.jmouse.project.util.FXURL_ARG1
-
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.ResourceBundle
 
 class FxURLCommand(
     override val bundle: ResourceBundle,
@@ -59,56 +60,43 @@ class FxURLCommand(
 
     override suspend fun execute(interaction: GuildChatInputCommandInteraction) {
 
-        val theirMsg = interaction.command.strings[FXURL_ARG1]!!
+        val url = interaction.command.strings[FXURL_ARG1]!!
 
-        val myResponse = interaction.deferPublicResponse()
+        val ack = interaction.deferPublicResponse()
 
-        val myMsg = tryToFix(theirMsg)
-
-        myResponse.respond {
-            content = myMsg
-        }
-    }
-
-    private suspend fun tryToFix(url: String): String {
-        return with(url) {
+        with(url){
             when {
-                contains("instagram.com") -> url.replace("instagram", "ddinstagram")
-                contains("twitter.com") -> url.replace("twitter", "twittpr")
-                contains("x.com") -> url.replace("x.com", "twittpr.com")
-                contains("tiktok.com") -> url.replace("tiktok", "tnktok")
-                contains("reddit.com") -> url.replace("reddit", "rxddit")
-                contains("v.redd.it") -> getFinalUrl(url, 10).replace("reddit", "rxddit")
+                contains("tiktok.com") -> rehost(ack, url, "tiktok", "tntok", listOf("vxtiktok", "tfxtok", "tiktxk"))
+                contains("instagram.com") -> rehost(ack, url, "instagram", "ddinstagram", listOf("instagramez"))
+                contains("twitter.com") -> rehost(ack, url, "twitter", "fxtwitter", listOf("twittpr", "vxtwitter"))
+                contains("x.com") -> rehost(ack, url, "x.com", "fxtwitter.com", listOf("twittpr.com", "vxtwitter.com"))
+                contains("reddit.com") -> rehost(ack, url, "reddit", "rxddit", listOf("vxreddit"))
+                contains("v.redd.it") -> rehost(ack, getFinalUrl(url, 10), "reddit", "rxddit", listOf("vxreddit"))
                 contains("open.spotify.com") ||
                         contains("music.apple.com") ||
-                        contains("music.youtube.com") -> buildMusicMessage(getMusicLinks(url))
-                else -> ERROR_MSG
+                        contains("music.youtube.com") -> buildMusicMessage(ack, getMusicLinks(url))
+                else -> {
+                    ack.respond { content = ERROR_MSG }
+                }
             }
         }
     }
 
-    suspend fun fxUrlTextBased(message: Message) {
-        println("Message Received: ${message.content}")
+    private suspend fun rehost(
+        ack: DeferredPublicMessageInteractionResponseBehavior,
+        url: String,
+        from: String,
+        to: String,
+        others: List<String>
+    ) {
+        val response = ack.respond { content = url.replace(from, to) }
+        delay(7000)
 
-        val cleanUrl: String = sanitize(message.content)
-
-        val response = tryToFix(cleanUrl)
-
-        message.channel.createMessage("${message.author?.mention}: $response")
-        message.delete()
-    }
-
-    private fun sanitize(message: String): String {
-        val cleanMessage = message
-            .removePrefix("/$COMMAND_FXURL")
-            .trim()
-
-        val end = cleanMessage.indexOfFirst{ it == ' ' } + 1
-
-        return if (end == 0) {
-            cleanMessage
-        } else {
-            cleanMessage.substring(0, end)
+        for (host in others) {
+            if (response.message.embeds.isEmpty()) {
+                response.edit { content = url.replace(from, host) }
+            } else break
+            delay(7000)
         }
     }
 
@@ -163,23 +151,24 @@ class FxURLCommand(
         }
     }
 
-    private fun buildMusicMessage(links: Map<String, String?>): String {
-        val title = links["Title"] ?: "Unknown Title"
-        val artist = links["Artist"] ?: "Unknown Artist"
-        val spotifyLink = links["Spotify"]
-        val appleMusicLink = links["Apple Music"]
-        val youtubeMusicLink = links["YouTube Music"]
+    private suspend fun buildMusicMessage(ack: DeferredPublicMessageInteractionResponseBehavior, links: Map<String, String?>) {
+            val title = links["Title"] ?: "Unknown Title"
+            val artist = links["Artist"] ?: "Unknown Artist"
+            val spotifyLink = links["Spotify"]
+            val appleMusicLink = links["Apple Music"]
+            val youtubeMusicLink = links["YouTube Music"]
 
-        if (spotifyLink.isNullOrBlank() && appleMusicLink.isNullOrBlank() && youtubeMusicLink.isNullOrBlank()) {
-            return ERROR_MSG
-        }
+            if (spotifyLink.isNullOrBlank() && appleMusicLink.isNullOrBlank() && youtubeMusicLink.isNullOrBlank()) {
+                ack.respond { content = ERROR_MSG }
+                return
+            }
 
-        val linkFields = mutableListOf<String>()
-        spotifyLink?.let {linkFields.add("[.]($it)")}
-        appleMusicLink?.let {linkFields.add("[.]($it)")}
-        youtubeMusicLink?.let {linkFields.add("[.]($it)")}
+            val linkFields = mutableListOf<String>()
+            spotifyLink?.let {linkFields.add("[.]($it)")}
+            appleMusicLink?.let {linkFields.add("[.]($it)")}
+            youtubeMusicLink?.let {linkFields.add("[.]($it)")}
 
-        return "## $title\n> *$artist*\n" + linkFields.joinToString(" ")
+            ack.respond { "## $title\n> *$artist*\n" + linkFields.joinToString(" ") }
     }
 
     fun shutdown() {
