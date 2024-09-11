@@ -4,7 +4,6 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.DeferredPublicMessageInteractionResponseBehavior
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.behavior.interaction.response.respond
-import dev.kord.core.entity.Message
 import dev.kord.core.entity.interaction.GuildChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
 import io.ktor.client.*
@@ -66,7 +65,7 @@ class FxURLCommand(
 
         with(url){
             when {
-                contains("tiktok.com") -> rehost(ack, url, "tiktok", "tntok", listOf("vxtiktok", "tfxtok", "tiktxk"))
+                contains("tiktok.com") -> rehost(ack, url, "tiktok", "tnktok", listOf("vxtiktok", "tfxtok", "tiktxk"))
                 contains("instagram.com") -> rehost(ack, url, "instagram", "ddinstagram", listOf("instagramez"))
                 contains("twitter.com") -> rehost(ack, url, "twitter", "fxtwitter", listOf("twittpr", "vxtwitter"))
                 contains("x.com") -> rehost(ack, url, "x.com", "fxtwitter.com", listOf("twittpr.com", "vxtwitter.com"))
@@ -90,10 +89,13 @@ class FxURLCommand(
         others: List<String>
     ) {
         val response = ack.respond { content = url.replace(from, to) }
+        val channel = response.message.channel
+        val responseId = response.message.id
         delay(7000)
 
         for (host in others) {
-            if (response.message.embeds.isEmpty()) {
+            val embed = channel.getMessage(responseId).embeds.firstOrNull()
+            if (embed?.video == null && embed?.image == null && embed?.thumbnail == null) {
                 response.edit { content = url.replace(from, host) }
             } else break
             delay(7000)
@@ -168,7 +170,7 @@ class FxURLCommand(
             appleMusicLink?.let {linkFields.add("[.]($it)")}
             youtubeMusicLink?.let {linkFields.add("[.]($it)")}
 
-            ack.respond { "## $title\n> *$artist*\n" + linkFields.joinToString(" ") }
+            ack.respond { content = "## $title\n> *$artist*\n" + linkFields.joinToString(" ") }
     }
 
     fun shutdown() {
