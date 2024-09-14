@@ -67,8 +67,8 @@ class FxURLCommand(
             when {
                 contains("tiktok.com") -> rehost(ack, url, "tiktok", "tnktok", listOf("vxtiktok", "tfxtok", "tiktxk"))
                 contains("instagram.com") -> rehost(ack, url, "instagram", "ddinstagram", listOf("instagramez"))
-                contains("twitter.com") -> rehost(ack, url, "twitter", "fxtwitter", listOf("twittpr", "vxtwitter"))
-                contains("x.com") -> rehost(ack, url, "x.com", "fxtwitter.com", listOf("twittpr.com", "vxtwitter.com"))
+                contains("twitter.com") -> rehost(ack, url, "twitter", "twittpr", listOf("fxtwitter", "vxtwitter"))
+                contains("x.com") -> rehost(ack, url, "x.com", "twittpr.com", listOf("fxtwitter.com", "vxtwitter.com"))
                 contains("reddit.com") -> rehost(ack, url, "reddit", "rxddit", listOf("vxreddit"))
                 contains("v.redd.it") -> rehost(ack, getFinalUrl(url, 10), "reddit", "rxddit", listOf("vxreddit"))
                 contains("open.spotify.com") ||
