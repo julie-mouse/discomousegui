@@ -46,9 +46,9 @@ compose.desktop {
         mainClass = "org.jmouse.project.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Msi)
+            targetFormats(TargetFormat.Exe)
             packageName = "DiscomouseGUI"
-            packageVersion = "1.0.4"
+            packageVersion = "1.0.5"
 
             includeAllModules = true
         }
