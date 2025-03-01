@@ -247,7 +247,7 @@ class FxURLCommand(
                     }
                 }
             } catch (e: Exception) {
-                ack.respond { content = "Facebook sucks. I can only rehost desktop, image posts :(" }
+                ack.respond { content = "Still learning my limits with this...you found one!" }
             }
         }
 

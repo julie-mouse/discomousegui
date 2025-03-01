@@ -50,7 +50,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Exe)
             packageName = "DiscomouseGUI"
-            packageVersion = "1.1.0"
+            packageVersion = "1.1.1"
 
             includeAllModules = true
         }
