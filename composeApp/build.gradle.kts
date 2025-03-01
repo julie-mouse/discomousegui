@@ -32,6 +32,8 @@ kotlin {
             implementation("io.ktor:ktor-client-content-negotiation:2.0.3")
             implementation("io.ktor:ktor-client-cio:2.0.3")
             implementation("io.ktor:ktor-client-serialization:2.0.3")
+
+            implementation("org.jsoup:jsoup:1.15.3")
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -40,7 +42,7 @@ kotlin {
     }
 }
 
-
+// packageDistributionForCurrentOS
 compose.desktop {
     application {
         mainClass = "org.jmouse.project.MainKt"
@@ -48,7 +50,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Exe)
             packageName = "DiscomouseGUI"
-            packageVersion = "1.0.5"
+            packageVersion = "1.1.0"
 
             includeAllModules = true
         }

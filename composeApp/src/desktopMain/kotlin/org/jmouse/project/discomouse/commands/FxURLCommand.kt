@@ -1,11 +1,13 @@
 package org.jmouse.project.discomouse.commands
 
+import dev.kord.common.Color
 import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.DeferredPublicMessageInteractionResponseBehavior
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.interaction.GuildChatInputCommandInteraction
 import dev.kord.rest.builder.interaction.string
+import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -20,6 +22,7 @@ import org.jmouse.project.util.COMMAND_FXURL
 import org.jmouse.project.util.COMMAND_FXURL2
 import org.jmouse.project.util.ERROR_MSG
 import org.jmouse.project.util.FXURL_ARG1
+import org.jsoup.Jsoup
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.ResourceBundle
@@ -65,7 +68,7 @@ class FxURLCommand(
 
         with(url){
             when {
-                contains("tumblr.com") -> rehost(ack, url, "www.tumblr.com", "www.tpmblr.com", listOf("fx.dissonant.dev"))
+                contains("tumblr.com") -> rehost(ack, url, "www.tumblr.com", "www.tpmblr.com", null)
                 contains("bsky.app") -> rehost(ack, url, "bsky.app", "bskyx.app", listOf("bsyy.app"))
                 contains("tiktok.com") -> rehost(ack, url, "tiktok", "tnktok", listOf("vxtiktok", "tfxtok", "tiktxk"))
                 contains("instagram.com") -> rehost(ack, url, "instagram", "ddinstagram", listOf("instagramez"))
@@ -76,6 +79,11 @@ class FxURLCommand(
                 contains("open.spotify.com") ||
                         contains("music.apple.com") ||
                         contains("music.youtube.com") -> buildMusicMessage(ack, getMusicLinks(url))
+                contains("www.twitch.tv") -> rehost(ack, url, "www.twitch.tv", "fxtwitch.seria.moe", null)
+//                contains("facebook.com/share/r/")  ||
+//                        contains("facebook.com/reel/") ||
+//                        contains("facebook.com/watch") -> rehost(ack, url, "www.facebook.com", "fxfb.seria.moe", null)
+                contains("facebook.com/share") -> facebookEmbed(ack, url)
                 else -> {
                     ack.respond { content = ERROR_MSG }
                 }
@@ -88,19 +96,21 @@ class FxURLCommand(
         url: String,
         from: String,
         to: String,
-        others: List<String>
+        others: List<String>?
     ) {
         val response = ack.respond { content = url.replace(from, to) }
         val channel = response.message.channel
         val responseId = response.message.id
-        delay(7000)
 
-        for (host in others) {
-            val embed = channel.getMessage(responseId).embeds.firstOrNull()
-            if (embed?.video == null && embed?.image == null && embed?.thumbnail == null) {
-                response.edit { content = url.replace(from, host) }
-            } else break
+        if (others != null) {
             delay(7000)
+            for (host in others) {
+                val embed = channel.getMessage(responseId).embeds.firstOrNull()
+                if (embed?.video == null && embed?.image == null && embed?.thumbnail == null) {
+                    response.edit { content = url.replace(from, host) }
+                } else break
+                delay(7000)
+            }
         }
     }
 
@@ -175,7 +185,76 @@ class FxURLCommand(
             ack.respond { content = "## $title\n> *$artist*\n" + linkFields.joinToString(" ") }
     }
 
+    private suspend fun facebookEmbed(ack: DeferredPublicMessageInteractionResponseBehavior, fbLink: String) {
+        try {
+            val doc = Jsoup.connect(fbLink)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36")
+                .header("Cookie","datr=eVPCZz3pvod9NQdud-eotZMs; sb=eVPCZza3ZsKXrB5cdEWhAojk; ps_l=1; ps_n=1; wd=1966x1360")
+                .get()
+
+            val fbTitle = doc.select("meta[property=og:title]")[0].attr("content")
+            val fbDescription = doc.select("meta[property=og:description]")[0].attr("content")
+            val fbImage = doc.select("meta[property=og:image]")[0].attr("content")
+
+            ack.respond {
+                embed {
+                    color = Color(0x0165E1)
+                    author {
+                        name = "Facebook"
+                        icon = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/1024px-2023_Facebook_icon.svg.png"
+                    }
+                    title = fbTitle
+                    url = fbLink
+                    description = fbDescription
+                    image = fbImage
+                    footer {
+                        text = "This is hugely in beta, sorry if I mess up!"
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            try {
+                val earlyDoc = Jsoup.connect(fbLink)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36")
+                    .header("Cookie","datr=eVPCZz3pvod9NQdud-eotZMs; sb=eVPCZza3ZsKXrB5cdEWhAojk; ps_l=1; ps_n=1; wd=1966x1360")
+                    .get()
+
+                val fbDirectLink = earlyDoc.select("link[rel=canonical]").attr("href")
+
+                val doc = Jsoup.connect(fbDirectLink)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36")
+                    .header("Cookie","datr=eVPCZz3pvod9NQdud-eotZMs; sb=eVPCZza3ZsKXrB5cdEWhAojk; ps_l=1; ps_n=1; wd=1966x1360")
+                    .get()
+
+                val fbTitle = doc.select("meta[property=og:title]")[0].attr("content")
+                val fbDescription = doc.select("meta[property=og:description]")[0].attr("content")
+                val fbImage = doc.select("meta[property=og:image]")[0].attr("content")
+
+                ack.respond {
+                    embed {
+                        color = Color(0x0165E1)
+                        author {
+                            name = "Facebook"
+                            icon = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/1024px-2023_Facebook_icon.svg.png"
+                        }
+                        title = fbTitle
+                        url = fbLink
+                        description = fbDescription
+                        image = fbImage
+                        footer {
+                            text = "This is hugely in beta, sorry if I mess up!"
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                ack.respond { content = "Facebook sucks. I can only rehost desktop, image posts :(" }
+            }
+        }
+
+    }
+
     fun shutdown() {
         client.close()
     }
 }
+
