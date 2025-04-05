@@ -18,10 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.jmouse.project.discomouse.ConsoleOutputStream
 import org.jmouse.project.discomouse.DiscomouseBot
 import org.jmouse.project.discomouse.ParsedLog
@@ -34,83 +31,94 @@ import org.jmouse.project.gui.theme.pastelRed
 import org.slf4j.event.Level
 import java.io.PrintStream
 
-fun main() = application {
-    var isBotRunning by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    val bot = remember { DiscomouseBot() }
+fun main() {
+    if (System.getenv("HEADLESS")?.toBoolean() == true) {
+        println("Launching Headless!")
+        val bot = DiscomouseBot()
+        runBlocking {
+            bot.start(this)
+        }
+        return
+    }
 
-    var isPrettyMode by remember { mutableStateOf(true) }
+    application {
+        var isBotRunning by remember { mutableStateOf(false) }
+        val scope = rememberCoroutineScope()
+        val bot = remember { DiscomouseBot() }
 
-    val consoleBuffer = remember { mutableStateListOf<ParsedLog>() }
-    val listState = rememberLazyListState()
+        var isPrettyMode by remember { mutableStateOf(true) }
 
-    fun startBot(scope: CoroutineScope, bot: DiscomouseBot) {
-        consoleBuffer.add(ParsedLog.print("Bot Started!"))
-        if (!isBotRunning) {
-            isBotRunning = true
-            scope.launch(Dispatchers.IO) {
-                try {
-                    bot.start(scope)
-                    while (isBotRunning) {
-                        delay(6000000)
-                        consoleBuffer.add(ParsedLog.print("Bot health check"))
-                    }
-                } catch (e: Exception) {
-                    isBotRunning = false
-                    consoleBuffer.add(
-                        ParsedLog.print(
-                            message = "Discomouse fell off the wheel due to this error: ${e.message}",
-                            level = Level.WARN
+        val consoleBuffer = remember { mutableStateListOf<ParsedLog>() }
+        val listState = rememberLazyListState()
+
+        fun startBot(scope: CoroutineScope, bot: DiscomouseBot) {
+            consoleBuffer.add(ParsedLog.print("Bot Started!"))
+            if (!isBotRunning) {
+                isBotRunning = true
+                scope.launch(Dispatchers.IO) {
+                    try {
+                        bot.start(scope)
+                        while (isBotRunning) {
+                            delay(6000000)
+                            consoleBuffer.add(ParsedLog.print("Bot health check"))
+                        }
+                    } catch (e: Exception) {
+                        isBotRunning = false
+                        consoleBuffer.add(
+                            ParsedLog.print(
+                                message = "Discomouse fell off the wheel due to this error: ${e.message}",
+                                level = Level.WARN
+                            )
                         )
-                    )
-                } finally {
-                    isBotRunning = false
+                    } finally {
+                        isBotRunning = false
+                    }
                 }
             }
         }
-    }
 
-    fun stopBot(scope: CoroutineScope, bot: DiscomouseBot) {
-        bot.stop(scope)
-        isBotRunning = false
-        consoleBuffer.add(ParsedLog.print("Bot Stopped!"))
-    }
-
-    // Function to parse raw log lines into ParsedLog objects and add them to the consoleBuffer
-    fun updateParsedLogs(rawLog: String) {
-        val parsedLog = parseLogMessage(rawLog)
-        if (parsedLog != null) {
-            consoleBuffer.add(parsedLog) // Add the parsed log to the mutable list
+        fun stopBot(scope: CoroutineScope, bot: DiscomouseBot) {
+            bot.stop(scope)
+            isBotRunning = false
+            consoleBuffer.add(ParsedLog.print("Bot Stopped!"))
         }
-    }
 
-    LaunchedEffect(Unit) {
-        val printStream = PrintStream(ConsoleOutputStream { line -> updateParsedLogs(line) }, true)
-        System.setOut(printStream)
-        System.setErr(printStream)
-        startBot(scope, bot)
-    }
+        // Function to parse raw log lines into ParsedLog objects and add them to the consoleBuffer
+        fun updateParsedLogs(rawLog: String) {
+            val parsedLog = parseLogMessage(rawLog)
+            if (parsedLog != null) {
+                consoleBuffer.add(parsedLog) // Add the parsed log to the mutable list
+            }
+        }
 
-    Window(
-        state = rememberWindowState(),
-        undecorated = true,
-        transparent = true,
-        onCloseRequest = ::exitApplication
-    ) {
-        Box(Modifier.background(color = pastelBG)){
-            Column {
-                WindowDraggableArea {
-                    CustomToolbar(
-                        isBotRunning,
-                        isPrettyMode,
-                        {toggledTo -> isPrettyMode = toggledTo},
-                        ::exitApplication,
-                        {startBot(scope, bot)},
-                        {stopBot(scope, bot)}
-                    )
+        LaunchedEffect(Unit) {
+            val printStream = PrintStream(ConsoleOutputStream { line -> updateParsedLogs(line) }, true)
+            System.setOut(printStream)
+            System.setErr(printStream)
+            startBot(scope, bot)
+        }
+
+        Window(
+            state = rememberWindowState(),
+            undecorated = true,
+            transparent = true,
+            onCloseRequest = ::exitApplication
+        ) {
+            Box(Modifier.background(color = pastelBG)){
+                Column {
+                    WindowDraggableArea {
+                        CustomToolbar(
+                            isBotRunning,
+                            isPrettyMode,
+                            {toggledTo -> isPrettyMode = toggledTo},
+                            ::exitApplication,
+                            {startBot(scope, bot)},
+                            {stopBot(scope, bot)}
+                        )
+                    }
+                    Spacer(Modifier.background(color = Color.Gray).fillMaxWidth().height(1.dp))
+                    TerminalComposable(consoleBuffer, listState, isPrettyMode)
                 }
-                Spacer(Modifier.background(color = Color.Gray).fillMaxWidth().height(1.dp))
-                TerminalComposable(consoleBuffer, listState, isPrettyMode)
             }
         }
     }
