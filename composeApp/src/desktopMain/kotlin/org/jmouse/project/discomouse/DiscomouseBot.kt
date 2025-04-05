@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jmouse.project.discomouse.commands.AnonMsgCommand
 import org.jmouse.project.discomouse.commands.FxURLCommand
+import org.jmouse.project.discomouse.commands.sendWakeUpMessage
 import org.jmouse.project.util.COMMAND_ANONMSG
 import org.jmouse.project.util.COMMAND_FXURL
 import org.jmouse.project.util.COMMAND_FXURL2
@@ -64,6 +65,8 @@ class DiscomouseBot {
                         Intent.GuildMembers
                     )
                 }
+
+                sendWakeUpMessage(kord!!)
             } catch (e: Exception) {
                 println("Discomouse fell off the wheel because of this error: ${e.message}")
             }
