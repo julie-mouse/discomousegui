@@ -16,11 +16,7 @@ suspend fun sendWakeUpMessage(bot: Kord) {
 
         channelsToMessage.forEach { channelId ->
             val channel = bot.getChannelOf<TextChannel>(channelId)
-            channel?.createMessage {
-                embed {
-                    image = wakeUpGif
-                }
-            }
+            channel?.createMessage(wakeUpGif)
         }
     }
 }

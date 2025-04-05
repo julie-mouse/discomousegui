@@ -64,6 +64,10 @@ class DiscomouseBot {
                         Intent.MessageContent,
                         Intent.GuildMembers
                     )
+
+                    launch {
+                        sendWakeUpMessage(kord!!)
+                    }
                 }
 
                 sendWakeUpMessage(kord!!)
