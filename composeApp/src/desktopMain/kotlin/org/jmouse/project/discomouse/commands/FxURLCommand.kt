@@ -71,7 +71,7 @@ class FxURLCommand(
                 contains("tumblr.com") -> rehost(ack, url, "www.tumblr.com", "www.tpmblr.com", null)
                 contains("bsky.app") -> rehost(ack, url, "bsky.app", "bskyx.app", listOf("bsyy.app"))
                 contains("tiktok.com") -> rehost(ack, url, "tiktok", "tnktok", listOf("vxtiktok", "tfxtok", "tiktxk"))
-                contains("instagram.com") -> rehost(ack, url, "instagram", "ddinstagram", listOf("instagramez"))
+                contains("instagram.com") -> rehost(ack, url, "instagram", "kkinstagram", listOf("instagramez", "ddinstagram"))
                 contains("twitter.com") -> rehost(ack, url, "twitter", "twittpr", listOf("fxtwitter", "vxtwitter"))
                 contains("x.com") -> rehost(ack, url, "x.com", "twittpr.com", listOf("fxtwitter.com", "vxtwitter.com"))
                 contains("reddit.com") -> rehost(ack, url, "reddit", "rxddit", listOf("vxreddit"))
