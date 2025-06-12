@@ -85,7 +85,7 @@ class FxURLCommand(
 //                        contains("facebook.com/watch") -> rehost(ack, url, "www.facebook.com", "fxfb.seria.moe", null)
                 contains("facebook.com/share") -> facebookEmbed(ack, url)
                 else -> {
-                    ack.respond { content = ERROR_MSG }
+                    ack.respond { content = "https://fx.fishburg.chat/{url}" }
                 }
             }
         }
